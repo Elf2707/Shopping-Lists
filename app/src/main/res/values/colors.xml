@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#F44336</color>
+    <color name="colorPrimaryDark">#D32F2F</color>
+    <color name="colorAccent">#00BCD4</color>
+    <color name="colorRowDone">#D32F2F</color>
+    <color name="colorRowNotDone">#FFFFFF</color>
+
+    <!-- Dividers colors-->
+    <color name="rowDividerColor">#FFFFFF</color>
+    <color name="layoutPartDivider">#90909090</color>
+
+    <!-- Items colors -->
+    <color name="itemNotDoneBack">#ffd600</color>
+    <color name="itemDoneBack">#64dd17</color>
+    <color name="itemSelect">#00BCD4</color>
+    <color name="itemDoneText">#ffffff</color>
+    <color name="itemNotDoneText">#4A4A4A</color>
+    <color name="fabColorNormal">#00BCD4</color>
+    <color name="fabColorPress">#00d4d0</color>
+    <color name="fabColorRipple">#00d4d0</color>
+
+    <!-- Text colors -->
+    <color name="textMain">#ffffff</color>
+    <color name="textSub">#bdbdbd</color>
+
+</resources>

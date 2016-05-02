@@ -1,0 +1,54 @@
+<resources>
+    <string name="app_name">Shopping Lists</string>
+    <string name="action_settings">Settings</string>
+    <string name="row.bought">Done: %1$d of %2$d</string>
+    <string name="row.total_price">%1$d</string>
+
+    <!-- Shopping list -->
+    <string name="shopping_list.title">Edit shopping list</string>
+
+    <!-- Shopping list item -->
+    <string name="item_title">List item title:</string>
+    <string name="item_description">Description:</string>
+    <string name="item_amount">Amount:</string>
+    <string name="item_price">Price:</string>
+    <string name="item_done">Mark item as done</string>
+
+    <string name="item_title_hint">Enter title</string>
+    <string name="item_description_hint">Write description</string>
+    <string name="item_amount_hint">Amount</string>
+    <string name="item_price_hint">Price</string>
+    <string name="title_activity_edit_list_item">Edit list item</string>
+
+    <string name="item_title_unknown">Unknown</string>
+    <string name="item_description_unknown">Simple item description</string>
+    <string name="item_amount_unknown">Some</string>
+    <string name="item_price_unknown">0</string>
+
+    <!--Fab of Add Shopping list activity Start-->
+    <string name="add_list_act_fab_save">Save</string>
+    <string name="add_list_act_fab_add">Add</string>
+    <string name="add_list_act_fab_del_sel">Delete</string>
+    <!-- Fab of Add Shopping list activity End -->
+
+    <!-- Errors toasts -->
+    <string name="something_goes_wrong">Where was an error while executing last operation. Try to restart app. I\'m very sorry fo that.</string>
+
+    <!-- Actions titles Start-->
+    <string name="main_list_edit">Edit</string>
+    <string name="main_list_delete">Delete</string>
+    <string name="main_list_add_item">Add Item</string>
+    <string name="main_list_mark_done">Mark As Done</string>
+    <!-- Actions titles End-->
+
+    <!-- Dialogs Start-->
+    <string name="dialog_list_done_title">Switch List an all items done state?</string>
+    <!-- Dialogs End-->
+
+    <!-- Edit list activity menu Start -->
+    <string name="ed_list_del_items">Dell Items</string>
+    <string name="ed_list_del_list">Dell List</string>
+    <string name="dialog_main_delete_title">Delete Element?</string>
+    <!-- Edit list activity menu End -->
+
+</resources>

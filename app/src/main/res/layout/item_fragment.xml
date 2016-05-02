@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/list_item.first_row">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:text="@string/item_title"
+            android:id="@+id/list_item.label1"
+            android:layout_gravity="center_vertical"
+            android:layout_marginLeft="10dip" />
+
+        <EditText
+            android:layout_width="match_parent"
+            android:layout_toLeftOf="@id/list_item.label1"
+            android:layout_height="wrap_content"
+            android:id="@+id/list_item.title"
+            android:hint="@string/item_title_hint"
+            android:layout_marginLeft="5dip"
+            android:textSize="21dip" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/list_item.second_row"
+        android:layout_below="@id/list_item.first_row"
+        android:layout_marginTop="5dip">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:text="@string/item_description"
+            android:id="@+id/list_item.label2"
+            android:layout_marginLeft="10dip" />
+
+        <EditText
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_above="@id/list_item.label2"
+            android:inputType="textMultiLine"
+            android:id="@+id/list_item.description"
+            android:layout_below="@id/list_item.second_row"
+            android:layout_centerHorizontal="true"
+            android:lines="2"
+            android:hint="@string/item_description_hint"
+            android:layout_marginTop="5dip"
+            android:layout_marginLeft="10dip"
+            android:layout_marginRight="10dip"
+            android:textSize="21dip" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/list_item.second_row"
+        android:id="@+id/list_item.third_row"
+        android:layout_marginTop="5dip">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:text="@string/item_amount"
+            android:id="@+id/list_item.label_amount"
+            android:layout_marginLeft="10dip" />
+
+        <EditText
+            android:layout_width="159dp"
+            android:layout_height="wrap_content"
+            android:layout_toLeftOf="@id/list_item.label_amount"
+            android:inputType="text"
+            android:ems="10"
+            android:id="@+id/list_item.amount"
+            android:layout_marginLeft="5dip"
+            android:hint="@string/item_amount_hint"
+            android:textSize="21dip" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/list_item.third_row"
+        android:id="@+id/list_item.foth_row"
+        android:layout_marginTop="5dip">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:text="@string/item_price"
+            android:id="@+id/list_item.label_price"
+            android:layout_marginLeft="10dip" />
+
+        <EditText
+            android:layout_width="159dp"
+            android:layout_height="wrap_content"
+            android:layout_toLeftOf="@id/list_item.label_price"
+            android:inputType="numberDecimal"
+            android:ems="10"
+            android:id="@+id/list_item.price"
+            android:layout_marginLeft="5dip"
+            android:hint="@string/item_price_hint"
+            android:textSize="21dip" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/list_item.foth_row"
+        android:id="@+id/list_item.five_row"
+        android:layout_marginTop="15dip"
+        android:gravity="center">
+
+        <CheckBox
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_toLeftOf="@id/list_item.label_price"
+            android:id="@+id/item_list.done" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_toLeftOf="@id/list_item.label_price"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:text="@string/item_done"
+            android:id="@+id/list_item.label_done"
+            android:layout_marginLeft="5dip" />
+
+    </LinearLayout>
+</RelativeLayout>
