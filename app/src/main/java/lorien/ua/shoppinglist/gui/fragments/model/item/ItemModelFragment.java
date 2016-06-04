@@ -12,8 +12,7 @@ import ua.lorien.shoppinglist.model.dao.ShoppingListItem;
 public class ItemModelFragment extends Fragment {
     private ShoppingListItem shoppingListItem = null;
     private int position = -1;
-    private boolean isNewItem = false;
-
+    private boolean isNewItem = true;
 
     public ItemModelFragment() {
         this.shoppingListItem = new ShoppingListItem();
@@ -32,14 +31,7 @@ public class ItemModelFragment extends Fragment {
 
     public void setShoppingListItem(ShoppingListItem shoppingListItem) {
         this.shoppingListItem = shoppingListItem;
-    }
-
-    public boolean isNewItem() {
-        return isNewItem;
-    }
-
-    public void setIsNewItem(boolean isNewItem) {
-        this.isNewItem = isNewItem;
+        isNewItem = false;
     }
 
     public int getPosition() {
@@ -48,5 +40,9 @@ public class ItemModelFragment extends Fragment {
 
     public void setPosition(int position) {
         this.position = position;
+    }
+
+    public boolean isNewItem() {
+        return isNewItem;
     }
 }

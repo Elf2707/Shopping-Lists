@@ -3,9 +3,11 @@ package lorien.ua.shoppinglist.gui.fragments;
 import android.app.Fragment;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.CheckBox;
 import android.widget.EditText;
 
 import org.greenrobot.eventbus.EventBus;
@@ -27,6 +29,7 @@ public class ItemEditFragment extends Fragment {
     EditText description = null;
     EditText amount = null;
     EditText price = null;
+    CheckBox done = null;
     ShoppingListItem item = null;
 
     @Override
@@ -50,6 +53,7 @@ public class ItemEditFragment extends Fragment {
         description = (EditText) result.findViewById(R.id.list_item_description);
         amount = (EditText) result.findViewById(R.id.list_item_amount);
         price = (EditText) result.findViewById(R.id.list_item_price);
+        done = (CheckBox) result.findViewById(R.id.list_item_done);
 
         return result;
     }
@@ -73,15 +77,17 @@ public class ItemEditFragment extends Fragment {
         description.setText("");
         amount.setText("");
         price.setText("");
+        done.setChecked(false);
     }
 
     private void populateViewFromItem(ShoppingListItem item) {
         if (item != null) {
-
+            this.item = item;
             title.setText((item.getName() != null) ? item.getName() : "");
             description.setText((item.getDescription() != null) ? item.getDescription() : "");
             amount.setText((item.getAmount() != null) ? item.getAmount() : "");
             price.setText((item.getPrice() != null) ? String.valueOf(item.getPrice()) : "");
+            done.setChecked(item.getIsDone() != null ? item.getIsDone() : false);
         }
     }
 
@@ -91,34 +97,36 @@ public class ItemEditFragment extends Fragment {
         }
 
         //Title
-        if (title != null && !title.getText().equals("")) {
+        if (title != null && title.getText().length() > 0) {
             item.setName(title.getText().toString());
         } else {
             item.setName(getString(R.string.item_title_unknown));
         }
 
         //Description
-        if (description != null && !description.getText().equals("")) {
+        if (description != null && description.getText().length() > 0) {
             item.setDescription(description.getText().toString());
         } else {
             item.setDescription(getString(R.string.item_description_unknown));
         }
 
         //Amount
-        if (amount != null && !amount.getText().equals("")) {
+        if (amount != null && amount.getText().length() > 0) {
             item.setAmount(amount.getText().toString());
         } else {
             item.setAmount(getString(R.string.item_amount_unknown));
         }
 
         //Price
-        if (price != null && !price.getText().equals("")) {
+        if (price != null && price.getText().length() > 0) {
             item.setPrice(Double.parseDouble(price.getText().toString()));
         } else {
-            item.setPrice(Double.parseDouble(getString(R.string.item_amount_unknown)));
+            Log.d(getClass().getSimpleName(), "ssssssssssssssssssssssssssssssssssssss111111");
         }
 
-        if (item.getIsDone() == null) {
+        if (done.isChecked()) {
+            item.setIsDone(true);
+        } else {
             item.setIsDone(false);
         }
 

@@ -6,6 +6,7 @@ import android.view.LayoutInflater;
 import android.view.ViewGroup;
 
 import com.bignerdranch.expandablerecyclerview.Model.ParentListItem;
+import com.bignerdranch.expandablerecyclerview.Model.ParentWrapper;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -18,8 +19,10 @@ import lorien.ua.shoppinglist.adapters.refreshable.Refreshable;
 import lorien.ua.shoppinglist.events.item.ItemAddEvent;
 import lorien.ua.shoppinglist.events.item.ItemDeleteEvent;
 import lorien.ua.shoppinglist.events.item.ItemMarkAsDoUndoEvent;
+import lorien.ua.shoppinglist.events.item.ItemUpdateEvent;
 import lorien.ua.shoppinglist.events.list.ListAddEvent;
 import lorien.ua.shoppinglist.events.list.ListDeleteEvent;
+import lorien.ua.shoppinglist.events.list.ListDeselectedEvent;
 import lorien.ua.shoppinglist.events.list.ListMarkAsDoUndoEvent;
 import lorien.ua.shoppinglist.events.list.ListSelectedEvent;
 import lorien.ua.shoppinglist.events.list.ListUpdateEvent;
@@ -53,7 +56,6 @@ public class DbShoppingListAdapterExpandable extends
     @SuppressWarnings("unused")
     @Subscribe(sticky = true)
     public void addListEventListener(ListAddEvent event) {
-        Log.d(getClass().getSimpleName(), "sssssssssssssssssssssssssssssssssAdd");
         new SaveShoppingListTask().execute(event);
         EventBus.getDefault().removeStickyEvent(ListAddEvent.class);
     }
@@ -61,7 +63,6 @@ public class DbShoppingListAdapterExpandable extends
     @SuppressWarnings("unused")
     @Subscribe(sticky = true)
     public void updateListEventListener(ListUpdateEvent event) {
-        Log.d(getClass().getSimpleName(), "sssssssssssssssssssssssssssssssssUpdate");
         new UpdateShoppingListTask().execute(event);
         EventBus.getDefault().removeStickyEvent(ListUpdateEvent.class);
     }
@@ -69,21 +70,14 @@ public class DbShoppingListAdapterExpandable extends
     @SuppressWarnings("unused")
     @Subscribe
     public void itemMarkDoUndoListener(ItemMarkAsDoUndoEvent event) {
-        int position = event.getPosition();
-        int childPosition = event.getPosition();
-
-
         ShoppingListItem item = event.getItem();
 
-        //Save it to DB
+        //Save item to DB
         shoppingListItemService.add(item);
 
-        //find parent item position to update
-        //interface 0 - parent list, 1 - child item
-        while ((position >= 0) && getItemViewType(--position) != 0) {
-        }
-
-        ShoppingList list = (ShoppingList) getParentItemList().get(position);
+        ShoppingList list = getListById(item.getShoppingListId());
+        int parentPosition = getListParentPosById(list.getId());
+        shoppingListService.add(list);
 
         //Refresh items info
         list.resetItems();
@@ -92,10 +86,7 @@ public class DbShoppingListAdapterExpandable extends
         shoppingListService.add(list);
 
         //Refresh interface
-        //child
-        notifyItemChanged(childPosition);
-        //parent
-        notifyParentItemChanged(position);
+        notifyParentItemChanged(parentPosition);
     }
 
     @SuppressWarnings("unused")
@@ -106,42 +97,141 @@ public class DbShoppingListAdapterExpandable extends
     }
 
     @SuppressWarnings("unused")
-    @Subscribe
+    @Subscribe(sticky = true)
     public void listDeleteListener(ListDeleteEvent event) {
-        int delPosition = event.getPosition();
-
-        ShoppingList delShoppingList = (ShoppingList) getParentItemList().get(delPosition);
-
-        //Remove from db
-        shoppingListService.delete(delShoppingList.getId());
-
-        //Remove from Parent list
-        getParentItemList().remove(delPosition);
 
         //Remove from item from checked list
-        delCheckedItem(delPosition);
-
-        notifyParentItemRemoved(delPosition);
+        delCheckedItem(event.getPosition());
+        new DeleteListTask().execute(event);
+        EventBus.getDefault().removeStickyEvent(ListDeleteEvent.class);
     }
 
     @SuppressWarnings("unused")
     @Subscribe(sticky = true)
-    public void addItemToList(ItemAddEvent event) {
+    public void addItemListener(ItemAddEvent event) {
         if (event != null && event.getItem() != null) {
             ShoppingListItem listItem = event.getItem();
-            ShoppingList list = (ShoppingList) getParentItemList().get(getSelectedItemPosition());
+            ShoppingList list = getListByChildPos(getSelectedItemPosition());
 
-            listItem.setShoppingListId(list.getId());
-            shoppingListItemService.add(listItem);
-            //Refresh list items list
-            list.resetItems();
-            list.getItems();
-
-            notifyChildItemInserted(getSelectedItemPosition(), list.getItemsCount() - 1);
-
-            //Clearing sticky event
-            EventBus.getDefault().removeStickyEvent(ItemAddEvent.class);
+            if (list != null) {
+                listItem.setShoppingListId(list.getId());
+                shoppingListItemService.add(listItem);
+                //Refresh list items list
+                list.resetItems();
+                list.getItems();
+                notifyChildItemInserted(getListParentPosById(list.getId()), list.getItemsCount() - 1);
+            }
         }
+        EventBus.getDefault().removeStickyEvent(ItemAddEvent.class);
+    }
+
+    @SuppressWarnings("unused")
+    @Subscribe(sticky = true)
+    public void updateItemListener(ItemUpdateEvent event) {
+        if (event != null && event.getItem() != null) {
+            ShoppingListItem listItem = event.getItem();
+            ShoppingList list = getListByChildPos(getSelectedItemPosition());
+
+            if (list != null) {
+                listItem.setShoppingListId(list.getId());
+                shoppingListItemService.add(listItem);
+
+                //Refresh list items list
+                shoppingListService.add(list);
+                list.resetItems();
+                list.getItems();
+
+                ShoppingListItem item = shoppingListItemService.findById(listItem.getId());
+                int parentPos = getListParentPosById(list.getId());
+                int childPos = getChildItemPosition(list, listItem);
+
+                if (parentPos != -1 && childPos != -1) {
+                    notifyChildItemChanged(parentPos, childPos);
+                    notifyParentItemChanged(parentPos);
+                }
+            }
+        }
+        //Clearing sticky event
+        EventBus.getDefault().removeStickyEvent(ItemUpdateEvent.class);
+    }
+
+    private int getChildItemPosition(ShoppingList list, ShoppingListItem item) {
+        int position = -1;
+        List<ShoppingListItem> items = list.getItems();
+        for (int i = 0; i < items.size(); i++) {
+            if (items.get(i).getId().equals(item.getId())) {
+                return i;
+            }
+        }
+        return position;
+    }
+
+    private ShoppingList getListByChildPos(int childPos) {
+        //Detect it is a list not an item 0 - parent 1 - child
+        if (getItemViewType(childPos) == 0) {
+            return (ShoppingList) ((ParentWrapper) getListItem(childPos))
+                    .getParentListItem();
+        }
+
+        int parentPosition = childPos;
+        while (parentPosition >= 0 && getItemViewType(--parentPosition) == 1) ;
+        if (parentPosition >= 0) {
+            return (ShoppingList) ((ParentWrapper) getListItem(parentPosition))
+                    .getParentListItem();
+        }
+
+        return null;
+    }
+
+    private int getListPosByChildPos(int childPos) {
+        //Detect it is a list not an item 0 - parent 1 - child
+        if (getItemViewType(childPos) == 0) {
+            return childPos;
+        }
+
+        int parentPosition = childPos;
+        while (parentPosition >= 0 && getItemViewType(--parentPosition) == 1) ;
+
+        return parentPosition;
+    }
+
+    private ShoppingList getListByAbsPosition(int position) {
+        //Detect it is a list not an item 0 - parent 1 - child
+        if (getItemViewType(position) != 0) {
+            return null;
+        }
+
+        ShoppingList list = (ShoppingList) ((ParentWrapper) getListItem(position))
+                .getParentListItem();
+
+        return list;
+    }
+
+    private int getListParentPosById(Long id) {
+        int parentPosition = -1;
+
+        List<ShoppingList> lists = (List<ShoppingList>) getParentItemList();
+        for (ShoppingList list : lists) {
+            parentPosition++;
+
+            if (list.getId().equals(id)) {
+                return parentPosition;
+            }
+        }
+
+        return parentPosition;
+    }
+
+    private ShoppingList getListById(Long id) {
+        List<ShoppingList> lists = (List<ShoppingList>) getParentItemList();
+
+        for (ShoppingList list : lists) {
+            if (list.getId().equals(id)) {
+                return list;
+            }
+        }
+
+        return null;
     }
 
     @SuppressWarnings("unused")
@@ -149,22 +239,20 @@ public class DbShoppingListAdapterExpandable extends
     public void onItemDeleteListener(ItemDeleteEvent event) {
         //Find out child item position in parent items list
         //and parent item position for this child
-        int childPosition = 0;
-        int parentPosition = event.getPosition();
+        ShoppingListItem item = event.getItem();
+        int parentPosition = getListParentPosById(item.getShoppingListId());
+        ShoppingList list = getListById(item.getShoppingListId());
+        int childPosition = getChildItemPosition(list, item);
 
         //Deselect item
         setItemState(parentPosition, false);
 
-        //0 - parent list, 1 - child item
-        while (getItemViewType(--parentPosition) != 0) {
-            childPosition++;
-        }
-
         //remove item from model and notify view
-        shoppingListItemService.delete(event.getItem().getId());
-        ShoppingList list = (ShoppingList) getParentItemList().get(parentPosition);
+        shoppingListItemService.delete(item.getId());
+
         list.resetItems();
         list.getItems();
+
         notifyChildItemRemoved(parentPosition, childPosition);
     }
 
@@ -197,17 +285,16 @@ public class DbShoppingListAdapterExpandable extends
     }
 
     //Background thread for marking all items of list don andone
-    private class MarkListAndItemsDonUndoneTask extends AsyncTask<ListMarkAsDoUndoEvent, Integer, Void> {
+    private class MarkListAndItemsDonUndoneTask extends AsyncTask<ListMarkAsDoUndoEvent, Void, Integer> {
 
         @Override
-        protected Void doInBackground(ListMarkAsDoUndoEvent... params) {
+        protected Integer doInBackground(ListMarkAsDoUndoEvent... params) {
             ShoppingList list = params[0].getList();
-            int position = params[0].getPosition();
-            boolean isDone = list.getIsDone();
 
             //save list to db
             shoppingListService.add(list);
-            publishProgress(new Integer(position));
+            int parentPosition = getListParentPosById(list.getId());
+            boolean isDone = list.getIsDone();
 
             //Mark all items as done/undone and save it to db
             List<ShoppingListItem> items = list.getItems();
@@ -215,27 +302,23 @@ public class DbShoppingListAdapterExpandable extends
                 for (int i = 0; i < items.size(); i++) {
                     items.get(i).setIsDone(isDone);
                     shoppingListItemService.add(items.get(i));
-                    publishProgress(new Integer[]{position, i});
                 }
             }
 
-            return null;
+            return parentPosition;
         }
 
         @Override
-        protected void onProgressUpdate(Integer... values) {
-            super.onProgressUpdate(values);
-            //what we should update parent view or child view
-            if (values.length > 1) {
-                notifyChildItemChanged(values[0], values[1]);
-            } else {
-                notifyParentItemChanged(values[0]);
+        protected void onPostExecute(Integer integer) {
+            super.onPostExecute(integer);
+            if (integer >= 0) {
+                notifyParentItemChanged(integer);
             }
         }
     }
 
     //Background task add new List
-    private class SaveShoppingListTask extends AsyncTask<ListAddEvent, Integer, Integer> {
+    private class SaveShoppingListTask extends AsyncTask<ListAddEvent, Void, Integer> {
 
         @Override
         protected Integer doInBackground(ListAddEvent... params) {
@@ -244,10 +327,9 @@ public class DbShoppingListAdapterExpandable extends
             List parentList = getParentItemList();
             parentList.add(list);
 
-            int position = parentList.size() - 1;
-
             shoppingListService.add(list);
 
+            int position = parentList.size() - 1;
             //Get generated id and save all elements of a list
             boolean isListDone = true;
             Long listId = list.getId();
@@ -258,20 +340,9 @@ public class DbShoppingListAdapterExpandable extends
                     isListDone = false;
                 }
 
-                ShoppingListItem item;
-                for (int i = 0; i < items.size(); i++) {
-                    item = items.get(i);
+                for (ShoppingListItem item : items) {
                     isListDone = isListDone && item.getIsDone();
-
-                    //Detect if it is new item just add third parameter 1
-                    //to detect notifyUpdate or notifyInsert to call
-                    if (item.getShoppingListId() == null) {
-                        item.setShoppingListId(listId);
-                        publishProgress(new Integer[]{position, i, 1});
-                    } else {
-                        //Item already exists
-                        publishProgress(new Integer[]{position, i});
-                    }
+                    item.setShoppingListId(listId);
                     shoppingListItemService.add(item);
                 }
             }
@@ -280,24 +351,6 @@ public class DbShoppingListAdapterExpandable extends
             list.setIsDone(isListDone);
 
             return position;
-        }
-
-        @Override
-        protected void onProgressUpdate(Integer... values) {
-            super.onProgressUpdate(values);
-
-            //When it is first child first update parent
-            if (values[0] >= 0) {
-                if (values[1] == 0) {
-                    notifyParentItemInserted(values[0]);
-                }
-
-                if (values.length == 3) {
-                    notifyChildItemInserted(values[0], values[1]);
-                } else {
-                    notifyChildItemChanged(values[0], values[1]);
-                }
-            }
         }
 
         @Override
@@ -316,10 +369,10 @@ public class DbShoppingListAdapterExpandable extends
         @Override
         protected Integer doInBackground(ListUpdateEvent... params) {
             ShoppingList list = params[0].getShoppingList();
-            int position = params[0].getPosition();
+            int position = getListParentPosById(list.getId());
 
-            List parentList = getParentItemList();
-            parentList.set(position, list);
+            List parentsList = getParentItemList();
+            parentsList.set(position, list);
 
             shoppingListService.add(list);
 
@@ -335,17 +388,15 @@ public class DbShoppingListAdapterExpandable extends
                     isListDone = false;
                 }
 
-                ShoppingListItem item;
-                for (int i = 0; i < items.size(); i++) {
-                    item = items.get(i);
+                //Updating old items
+                for (ShoppingListItem item : items) {
                     isListDone = isListDone && item.getIsDone();
                     item.setShoppingListId(listId);
                     shoppingListItemService.add(item);
-                    publishProgress(new Integer[]{position, i});
                 }
             }
 
-            //Seting up list done/undone
+            //Setting up list done/undone
             list.setIsDone(isListDone);
 
             return position;
@@ -354,26 +405,59 @@ public class DbShoppingListAdapterExpandable extends
         @Override
         protected void onProgressUpdate(Integer... values) {
             super.onProgressUpdate(values);
-
-            //When it is first child first update parent
-            if (values[0] >= 0) {
-                if (values[1] == 0) {
-                   // notifyParentItemChanged(values[0]);
-                }
-
-                notifyChildItemChanged(values[0], values[1]);
-            }
         }
 
         @Override
         protected void onPostExecute(Integer integer) {
             super.onPostExecute(integer);
             if (integer >= 0) {
-                notifyParentItemChanged(position);
+                //Remove old parent
+                notifyParentItemRemoved(integer);
+                //Insert new parent
+                notifyParentItemInserted(integer);
                 //Reselect item in MainActivity to update ActionMode
                 EventBus.getDefault().post(new ListSelectedEvent(list, position));
             }
         }
+    }
+
+    //Background task delete List
+    private class DeleteListTask extends AsyncTask<ListDeleteEvent, Void, Integer> {
+
+        @Override
+        protected Integer doInBackground(ListDeleteEvent... params) {
+            int position = getListParentPosById(params[0].getList().getId());
+            ShoppingList list = params[0].getList();
+
+            List lists = getParentItemList();
+            lists.remove(position);
+
+            //Attaching entity to context
+            shoppingListService.add(list);
+
+            //Getting list items
+            list.resetItems();
+            List<ShoppingListItem> items = list.getItems();
+            //delete list
+            shoppingListService.delete(list.getId());
+
+            //delete items
+            for (ShoppingListItem item : items) {
+                shoppingListItemService.delete(item.getId());
+            }
+
+            return position;
+        }
+
+        @Override
+        protected void onPostExecute(Integer integer) {
+            super.onPostExecute(integer);
+            if (integer >= 0) {
+                notifyParentItemRemoved(integer);
+                EventBus.getDefault().post(new ListDeselectedEvent());
+            }
+        }
+
     }
 
     public void refreshItem(int position) {

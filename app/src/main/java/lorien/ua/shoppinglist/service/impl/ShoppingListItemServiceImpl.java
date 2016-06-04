@@ -60,6 +60,12 @@ public class ShoppingListItemServiceImpl implements ShoppingListItemService {
 
     @Override
     public ShoppingListItem findById(Long id) {
+        DaoSession session = daoMaster.newSession();
+        if (session != null) {
+            ShoppingListItemDao shoppingListItemDao = session.getShoppingListItemDao();
+            return shoppingListItemDao.load(id);
+        }
+
         return null;
     }
 

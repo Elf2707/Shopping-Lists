@@ -4,6 +4,8 @@ import android.annotation.TargetApi;
 import android.os.Build;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -47,18 +49,21 @@ public class ListHolder extends ParentViewHolder implements View.OnClickListener
 
         row.setOnClickListener(this);
 
-        //Making ripple effect starts at position of touch
-        row.setOnTouchListener(new View.OnTouchListener() {
+        //Tinting systembar
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            //Making ripple effect starts at position of touch
+            row.setOnTouchListener(new View.OnTouchListener() {
 
-            @TargetApi(Build.VERSION_CODES.LOLLIPOP)
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                v.findViewById(R.id.list_row_main_layout)
-                        .getBackground()
-                        .setHotspot(event.getX(), event.getY());
-                return false;
-            }
-        });
+                @TargetApi(Build.VERSION_CODES.LOLLIPOP)
+                @Override
+                public boolean onTouch(View v, MotionEvent event) {
+                    v.findViewById(R.id.list_row_main_layout)
+                            .getBackground()
+                            .setHotspot(event.getX(), event.getY());
+                    return false;
+                }
+            });
+        }
 
         this.choiceableAdapter = choiceableAdapter;
 
@@ -88,9 +93,9 @@ public class ListHolder extends ParentViewHolder implements View.OnClickListener
 
         //Shopping list done/not done
         if (shoppingList.getIsDone()) {
-            rowLayout.setBackgroundColor(rowLayout.getResources().getColor(R.color.itemDoneBack));
+            rowLayout.setBackgroundColor(rowLayout.getResources().getColor(R.color.ListDoneBack));
         } else {
-            rowLayout.setBackgroundColor(rowLayout.getResources().getColor(R.color.itemNotDoneBack));
+            rowLayout.setBackgroundColor(rowLayout.getResources().getColor(R.color.ListNotDoneBack));
         }
 
         //Shopping list select/not select
@@ -104,7 +109,6 @@ public class ListHolder extends ParentViewHolder implements View.OnClickListener
         int selectedPosition = choiceableAdapter.getSelectedItemPosition();
         int expandPosition = getAdapterPosition();
 
-        //Correct selectable position if we need it
         if (selectedPosition > expandPosition) {
             int listItemsCount = shoppingList.getItemsCount();
 

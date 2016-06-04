@@ -5,7 +5,7 @@
     <string name="row.total_price">%1$d</string>
 
     <!-- Shopping list -->
-    <string name="shopping_list.title">Edit shopping list</string>
+    <string name="shopping_list.title">Edit list</string>
 
     <!-- Shopping list item -->
     <string name="item_title">List item title:</string>
@@ -31,24 +31,33 @@
     <string name="add_list_act_fab_del_sel">Delete</string>
     <!-- Fab of Add Shopping list activity End -->
 
-    <!-- Errors toasts -->
+    <!-- Errors toasts Start -->
     <string name="something_goes_wrong">Where was an error while executing last operation. Try to restart app. I\'m very sorry fo that.</string>
+    <string name="ed_list_validation">Some of fields of the list does not filled properly</string>
+    <string name="ed_item_validation">Some of fields of the item does not filled properly</string>
+    <!-- Errors toasts End -->
 
-    <!-- Actions titles Start-->
+    <!-- Actions titles Start -->
     <string name="main_list_edit">Edit</string>
     <string name="main_list_delete">Delete</string>
     <string name="main_list_add_item">Add Item</string>
     <string name="main_list_mark_done">Mark As Done</string>
-    <!-- Actions titles End-->
+    <!-- Actions titles End -->
 
     <!-- Dialogs Start-->
     <string name="dialog_list_done_title">Switch List an all items done state?</string>
+    <string name="dialog_main_delete_title">Delete Element?</string>
+    <string name="dialog_delete_list_title">Delete Whole Shopping LIst?</string>
     <!-- Dialogs End-->
 
     <!-- Edit list activity menu Start -->
     <string name="ed_list_del_items">Dell Items</string>
     <string name="ed_list_del_list">Dell List</string>
-    <string name="dialog_main_delete_title">Delete Element?</string>
     <!-- Edit list activity menu End -->
 
+    <!-- Preferences Start -->
+    <string name="keepscreenon_summary">Keep the screen powered on while the app is in the
+    foreground</string>
+    <string name="keepscreenon_title">Keep Screen On</string>
+    <!-- Preferences End -->
 </resources>

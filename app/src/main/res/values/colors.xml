@@ -2,26 +2,28 @@
 <resources>
     <color name="colorPrimary">#F44336</color>
     <color name="colorPrimaryDark">#D32F2F</color>
-    <color name="colorAccent">#00BCD4</color>
-    <color name="colorRowDone">#D32F2F</color>
-    <color name="colorRowNotDone">#FFFFFF</color>
+    <color name="colorAccent">#ff4081</color>
 
     <!-- Dividers colors-->
     <color name="rowDividerColor">#FFFFFF</color>
     <color name="layoutPartDivider">#90909090</color>
 
     <!-- Items colors -->
-    <color name="itemNotDoneBack">#ffd600</color>
-    <color name="itemDoneBack">#64dd17</color>
-    <color name="itemSelect">#00BCD4</color>
-    <color name="itemDoneText">#ffffff</color>
-    <color name="itemNotDoneText">#4A4A4A</color>
-    <color name="fabColorNormal">#00BCD4</color>
-    <color name="fabColorPress">#00d4d0</color>
-    <color name="fabColorRipple">#00d4d0</color>
+    <color name="itemNotDoneBack">#FFB74D</color>
+    <color name="itemDoneBack">#b2ff59</color>
+    <color name="itemSelect">#b71c1c</color>
+
+    <!-- List colors -->
+    <color name="ListNotDoneBack">#EF6C00</color>
+    <color name="ListDoneBack">#00c853</color>
+
+    <!-- Fab colors -->
+    <color name="fabColorNormal">#ff4081</color>
+    <color name="fabColorPress">#f50057</color>
+    <color name="fabColorRipple">#ff80ab</color>
 
     <!-- Text colors -->
     <color name="textMain">#ffffff</color>
-    <color name="textSub">#bdbdbd</color>
+    <color name="textSub">#727272</color>
 
 </resources>

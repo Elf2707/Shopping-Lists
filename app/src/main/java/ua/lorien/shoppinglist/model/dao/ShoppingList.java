@@ -3,6 +3,7 @@ package ua.lorien.shoppinglist.model.dao;
 import android.util.Log;
 
 import java.util.List;
+
 import ua.lorien.shoppinglist.model.dao.DaoSession;
 import de.greenrobot.dao.DaoException;
 
@@ -10,9 +11,11 @@ import de.greenrobot.dao.DaoException;
 
 // KEEP INCLUDES - put your custom includes here
 import com.bignerdranch.expandablerecyclerview.Model.ParentListItem;
+
 import java.util.ArrayList;
 import java.io.Serializable;
 // KEEP INCLUDES END
+
 /**
  * Entity mapped to table "SHOPPING_LIST".
  */
@@ -22,10 +25,14 @@ public class ShoppingList implements ParentListItem, Serializable {
     private String name;
     private Boolean isDone;
 
-    /** Used to resolve relations */
+    /**
+     * Used to resolve relations
+     */
     private transient DaoSession daoSession;
 
-    /** Used for active entity operations. */
+    /**
+     * Used for active entity operations.
+     */
     private transient ShoppingListDao myDao;
 
     private List<ShoppingListItem> items;
@@ -46,7 +53,9 @@ public class ShoppingList implements ParentListItem, Serializable {
         this.isDone = isDone;
     }
 
-    /** called by internal mechanisms, do not call yourself. */
+    /**
+     * called by internal mechanisms, do not call yourself.
+     */
     public void __setDaoSession(DaoSession daoSession) {
         this.daoSession = daoSession;
         myDao = daoSession != null ? daoSession.getShoppingListDao() : null;
@@ -76,7 +85,9 @@ public class ShoppingList implements ParentListItem, Serializable {
         this.isDone = isDone;
     }
 
-    /** To-many relationship, resolved on first access (and after reset). Changes to to-many relations are not persisted, make changes to the target entity. */
+    /**
+     * To-many relationship, resolved on first access (and after reset). Changes to to-many relations are not persisted, make changes to the target entity.
+     */
     public List<ShoppingListItem> getItems() {
         if (items == null) {
             if (daoSession == null) {
@@ -85,7 +96,7 @@ public class ShoppingList implements ParentListItem, Serializable {
             ShoppingListItemDao targetDao = daoSession.getShoppingListItemDao();
             List<ShoppingListItem> itemsNew = targetDao._queryShoppingList_Items(id);
             synchronized (this) {
-                if(items == null) {
+                if (items == null) {
                     items = itemsNew;
                 }
             }
@@ -93,32 +104,40 @@ public class ShoppingList implements ParentListItem, Serializable {
         return items;
     }
 
-    /** Resets a to-many relationship, making the next get call to query for a fresh result. */
+    /**
+     * Resets a to-many relationship, making the next get call to query for a fresh result.
+     */
     public synchronized void resetItems() {
         items = null;
     }
 
-    /** Convenient call for {@link AbstractDao#delete(Object)}. Entity must attached to an entity context. */
+    /**
+     * Convenient call for {@link AbstractDao#delete(Object)}. Entity must attached to an entity context.
+     */
     public void delete() {
         if (myDao == null) {
             throw new DaoException("Entity is detached from DAO context");
-        }    
+        }
         myDao.delete(this);
     }
 
-    /** Convenient call for {@link AbstractDao#update(Object)}. Entity must attached to an entity context. */
+    /**
+     * Convenient call for {@link AbstractDao#update(Object)}. Entity must attached to an entity context.
+     */
     public void update() {
         if (myDao == null) {
             throw new DaoException("Entity is detached from DAO context");
-        }    
+        }
         myDao.update(this);
     }
 
-    /** Convenient call for {@link AbstractDao#refresh(Object)}. Entity must attached to an entity context. */
+    /**
+     * Convenient call for {@link AbstractDao#refresh(Object)}. Entity must attached to an entity context.
+     */
     public void refresh() {
         if (myDao == null) {
             throw new DaoException("Entity is detached from DAO context");
-        }    
+        }
         myDao.refresh(this);
     }
 
@@ -155,7 +174,7 @@ public class ShoppingList implements ParentListItem, Serializable {
     }
 
     @Override
-    public List<?> getChildItemList() {
+    public List<ShoppingListItem> getChildItemList() {
         return items;
     }
 
@@ -166,7 +185,7 @@ public class ShoppingList implements ParentListItem, Serializable {
 
     public void addItem(ShoppingListItem item) {
         if (item != null) {
-            if(items == null){
+            if (items == null) {
                 //First time create list of items
                 items = new ArrayList<>();
             }
@@ -174,20 +193,31 @@ public class ShoppingList implements ParentListItem, Serializable {
         }
     }
 
+    //Add items from the list if where were old
+    //items with id field not null we just replace it
+    public void addAllItemsWithReplace(List<ShoppingListItem> newItems) {
+        if (newItems != null) {
+            //replace all items by updated items
+            items = new ArrayList<>();
+            items.addAll(newItems);
+        }
+    }
+
     public void setItem(int position, ShoppingListItem item) {
         if (item != null) {
-            if(items == null){
+            if (items == null) {
                 //First time create list of items
                 items = new ArrayList<>();
             }
-            Log.d(getClass().getSimpleName(), "sssssssssssssssssssssss" + items.size());
             items.set(position, item);
         }
     }
 
     public void removeItem(int position) {
-        if( position < items.size() ){
-            items.remove(position);
+        if (items != null) {
+            if (position < items.size()) {
+                items.remove(position);
+            }
         }
     }
     // KEEP METHODS END

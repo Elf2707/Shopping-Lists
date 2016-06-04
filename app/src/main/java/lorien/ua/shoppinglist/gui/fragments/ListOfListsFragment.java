@@ -83,13 +83,6 @@ public class ListOfListsFragment extends Fragment {
     }
 
     @Override
-    public void onActivityCreated(Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
-        FloatingActionButton fab = (FloatingActionButton) getActivity().findViewById(R.id.main_fab);
-        fab.attachToRecyclerView(listOfListsView);
-    }
-
-    @Override
     public void onPause() {
         EventBus.getDefault().unregister(adapter);
         super.onPause();

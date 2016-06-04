@@ -29,7 +29,8 @@
             android:text="Name"
             android:textAppearance="?android:attr/textAppearanceLarge"
             android:layout_toRightOf="@id/child_row_cart"
-            android:textColor="@color/textMain" />
+            android:textColor="@color/textMain"
+            android:typeface="serif" />
 
         <TextView
             android:id="@+id/child.row.description"
@@ -42,7 +43,8 @@
             android:text="Description"
             android:textAppearance="?android:attr/textAppearanceLarge"
             android:layout_toRightOf="@+id/child_row_cart"
-            android:textColor="@color/textSub" />
+            android:textColor="@color/textSub"
+            android:typeface="serif" />
 
         <TextView
             android:id="@+id/child.row.amount"
@@ -55,7 +57,8 @@
             android:textAppearance="?android:attr/textAppearanceLarge"
             android:textColor="@color/textMain"
             android:layout_toLeftOf="@+id/imageView"
-            android:layout_alignRight="@+id/child_row.price" />
+            android:layout_alignRight="@+id/child_row.price"
+            android:typeface="serif" />
 
         <ImageView
             android:id="@+id/imageView"
@@ -75,7 +78,8 @@
             android:text="0"
             android:textAppearance="?android:attr/textAppearanceLarge"
             android:textColor="@color/textSub"
-            android:layout_alignBottom="@+id/child.row.description" />
+            android:layout_alignBottom="@+id/child.row.description"
+            android:typeface="serif" />
 
     </RelativeLayout>
 

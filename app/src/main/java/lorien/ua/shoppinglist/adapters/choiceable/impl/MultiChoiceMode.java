@@ -1,6 +1,7 @@
 package lorien.ua.shoppinglist.adapters.choiceable.impl;
 
 import android.os.Bundle;
+import android.util.Log;
 
 import lorien.ua.shoppinglist.adapters.choiceable.Choiceable;
 import lorien.ua.shoppinglist.parcelables.ParcelableArrayList;
@@ -49,6 +50,10 @@ public class MultiChoiceMode implements Choiceable {
     public void onRestoreInstanceState(Bundle state) {
         if (state != null && state.getParcelable(STATE_CHECK_STATES) != null) {
             checkStates = state.getParcelable(STATE_CHECK_STATES);
+            Log.d(getClass().getSimpleName(), "sssssssssssssssssssssssssssss11111" + checkStates.size() +
+            checkStates.get(0).toString() + "|" +
+                    checkStates.get(1).toString() + "|" +
+                    checkStates.get(2).toString() + "|");
         }
     }
 

@@ -2,13 +2,10 @@ package lorien.ua.shoppinglist.adapters;
 
 import android.os.Bundle;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
-import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Toast;
 
+import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 
 import java.util.ArrayList;
@@ -19,8 +16,12 @@ import lorien.ua.shoppinglist.adapters.choiceable.Choiceable;
 import lorien.ua.shoppinglist.adapters.choiceable.impl.MultiChoiceMode;
 import lorien.ua.shoppinglist.adapters.refreshable.Refreshable;
 import lorien.ua.shoppinglist.events.item.ItemAddEvent;
+import lorien.ua.shoppinglist.events.item.ItemDeleteEvent;
+import lorien.ua.shoppinglist.events.item.ItemDeselectedEvent;
 import lorien.ua.shoppinglist.events.item.ItemMarkAsDoUndoEvent;
+import lorien.ua.shoppinglist.events.item.ItemUpdateEvent;
 import lorien.ua.shoppinglist.events.item.ItemsRemoveChecked;
+import lorien.ua.shoppinglist.events.list.ListRefreshEvent;
 import lorien.ua.shoppinglist.holders.ItemHolder;
 import lorien.ua.shoppinglist.service.ShoppingListItemService;
 import ua.lorien.shoppinglist.model.dao.ShoppingList;
@@ -46,6 +47,10 @@ public class DbListItemMultiChoiceAdapter extends RecyclerView.Adapter<ItemHolde
 
         this.choiceMode = new MultiChoiceMode(itemsCount);
         this.itemsService = itemsService;
+    }
+
+    public List<ShoppingListItem> getAllItems() {
+        return listItems;
     }
 
     @Override
@@ -104,17 +109,31 @@ public class DbListItemMultiChoiceAdapter extends RecyclerView.Adapter<ItemHolde
 
     @SuppressWarnings("unused")
     @Subscribe(sticky = true)
-    public void addItemToList(ItemAddEvent event) {
+    public void addItemListener(ItemAddEvent event) {
         if (event != null && event.getItem() != null) {
             choiceMode.addCheckedItem(listItems.size(), false);
             listItems.add(event.getItem());
             notifyItemInserted(listItems.size() - 1);
         }
+
+        EventBus.getDefault().post(new ListRefreshEvent());
+        EventBus.getDefault().removeStickyEvent(ItemAddEvent.class);
+    }
+
+    @SuppressWarnings("unused")
+    @Subscribe(sticky = true)
+    public void updateListItemListener(ItemUpdateEvent event) {
+        if (event != null && event.getItem() != null) {
+            listItems.set(event.getPosition(), event.getItem());
+            notifyItemChanged(event.getPosition());
+        }
+
+        EventBus.getDefault().removeStickyEvent(ItemUpdateEvent.class);
     }
 
     @SuppressWarnings("unused")
     @Subscribe
-    public void dellCheckedListItems(ItemsRemoveChecked event) {
+    public void deleteAllSelItemsListener(ItemsRemoveChecked event) {
         ShoppingList shoppingList = event.getShoppingList();
         //Delete checked shopping list
         int i = 0;
@@ -133,6 +152,21 @@ public class DbListItemMultiChoiceAdapter extends RecyclerView.Adapter<ItemHolde
                 i++;
             }
         }
+    }
+
+    @SuppressWarnings("unused")
+    @Subscribe
+    public void deleteItemListener(ItemDeleteEvent event) {
+        ShoppingListItem item = event.getItem();
+        int position = event.getPosition();
+
+        //Delete checked shopping list
+        delCheckedItem(position);
+        listItems.remove(position);
+        itemsService.delete(item.getId());
+
+        notifyItemRemoved(position);
+        EventBus.getDefault().post(new ItemDeselectedEvent(event.getPosition()));
     }
 
     @SuppressWarnings("unused")

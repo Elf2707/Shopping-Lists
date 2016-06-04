@@ -4,25 +4,32 @@ import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.graphics.Typeface;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.design.widget.AppBarLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.view.ActionMode;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
+import android.text.SpannableString;
+import android.text.Spanned;
+import android.text.style.StyleSpan;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import com.melnykov.fab.FloatingActionButton;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 
+import lorien.ua.shoppinglist.MyApplication;
 import lorien.ua.shoppinglist.R;
 import lorien.ua.shoppinglist.events.common.CorrectPositionEvent;
 import lorien.ua.shoppinglist.events.item.ItemDeleteEvent;
@@ -54,7 +61,7 @@ public class MainActivity extends AppCompatActivity implements ActionMode.Callba
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        //Tinting systembar
+        //Tinting statusbar
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             Window window = getWindow();
             window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
@@ -63,13 +70,13 @@ public class MainActivity extends AppCompatActivity implements ActionMode.Callba
         }
 
         setContentView(R.layout.activity_main);
+
         Toolbar toolbar = (Toolbar) findViewById(R.id.main_toolbar);
         setSupportActionBar(toolbar);
 
         AppBarLayout appBar = (AppBarLayout) findViewById(R.id.main_appbar);
         appBar.addOnOffsetChangedListener(this);
         appBar.setExpanded(!isAppBarCollapsed, true);
-
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.main_fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -78,7 +85,6 @@ public class MainActivity extends AppCompatActivity implements ActionMode.Callba
                 addListButtonListener(view);
             }
         });
-
 
         //Restore data
         if (savedInstanceState != null) {
@@ -101,6 +107,9 @@ public class MainActivity extends AppCompatActivity implements ActionMode.Callba
             isAppBarCollapsed = savedInstanceState.getBoolean(APP_BAR_COLLAPSED_STATE);
             appBar.setExpanded(!isAppBarCollapsed, true);
         }
+
+        getSupportActionBar().setDisplayShowHomeEnabled(false);
+        getSupportActionBar().setIcon(R.mipmap.ic_launcher);
     }
 
     @Override
@@ -119,10 +128,10 @@ public class MainActivity extends AppCompatActivity implements ActionMode.Callba
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
-            return true;
+            startActivity(new Intent(this, Preferences.class));
         }
 
-        return super.onOptionsItemSelected(item);
+        return true;
     }
 
     @Override
@@ -135,19 +144,24 @@ public class MainActivity extends AppCompatActivity implements ActionMode.Callba
     protected void onResume() {
         super.onResume();
         EventBus.getDefault().register(this);
+        SharedPreferences prefs = ((MyApplication) getApplication()).getPrefs();
+        if (prefs != null) {
+            //Get list layout to make setKeepScreen on
+            LinearLayout listLayout = (LinearLayout) findViewById(R.id.main_act_list_layout);
+            listLayout.setKeepScreenOn(prefs.getBoolean(MyApplication.PREF_KEEP_SCREEN_ON, false));
+        }
     }
 
 
     @SuppressWarnings("unused")
     @Subscribe
-    public void correctSelPositionEvent(CorrectPositionEvent event){
-        //selectListPosition = event.getPosition();
+    public void correctSelPositionEvent(CorrectPositionEvent event) {
+        selectListPosition = event.getPosition();
     }
 
     @SuppressWarnings("unused")
     @Subscribe(sticky = true)
     public void onListSelected(ListSelectedEvent event) {
-        Log.d(getClass().getSimpleName(), "sssssssssssssssssssssssssssssssssssssss");
         //Clear item selected if it was not clear by
         //deselect event
         selectedListItem = null;
@@ -158,7 +172,6 @@ public class MainActivity extends AppCompatActivity implements ActionMode.Callba
         //Start action mode
         startActionMode();
         actionMode.setTitle(selectedShoppingList.getName());
-        Log.d(getClass().getSimpleName(), "sssssssssssssssssssssssssssssssssssssss" + selectedShoppingList.getName());
     }
 
     @SuppressWarnings("unused")
@@ -280,7 +293,8 @@ public class MainActivity extends AppCompatActivity implements ActionMode.Callba
 
                 if (selectedListItem != null) {
                     i = new Intent(this, EditItemActivity.class);
-                    i.putExtra(EditItemActivity.RECEIV_LIST_ITEM, selectedListItem);
+                    i.putExtra(EditItemActivity.RECEIVE_LIST_ITEM, selectedListItem);
+                    i.putExtra(EditItemActivity.RECEIVE_ITEM_POSITION, selectListPosition);
                 }
 
                 if (i != null) {
@@ -332,9 +346,9 @@ public class MainActivity extends AppCompatActivity implements ActionMode.Callba
             //Deleting item
             EventBus.getDefault().post(new ItemDeleteEvent(selectListPosition, selectedListItem));
         } else if (selectedShoppingList != null) {
-            EventBus.getDefault().post(new ListDeleteEvent(selectListPosition));
+            EventBus.getDefault().post(new ListDeleteEvent(selectedShoppingList, selectListPosition));
         }
-        cleareSelectedItems();
+        clearSelectedItems();
     }
 
     private void setListAsDone() {
@@ -360,10 +374,7 @@ public class MainActivity extends AppCompatActivity implements ActionMode.Callba
         startActivity(i);
     }
 
-    private void delListButtonListener(View view) {
-    }
-
-    private void cleareSelectedItems() {
+    private void clearSelectedItems() {
         selectedListItem = null;
         selectedShoppingList = null;
         selectListPosition = -1;
@@ -383,8 +394,10 @@ public class MainActivity extends AppCompatActivity implements ActionMode.Callba
         if (verticalOffset > APP_BAR_EXPAND_OFFSET) {
             //Expanded state
             isAppBarCollapsed = false;
+            getSupportActionBar().setDisplayShowHomeEnabled(false);
         } else {
             isAppBarCollapsed = true;
+            getSupportActionBar().setDisplayShowHomeEnabled(true);
         }
     }
 }

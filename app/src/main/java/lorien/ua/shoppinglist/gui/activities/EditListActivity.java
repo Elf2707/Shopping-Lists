@@ -1,6 +1,10 @@
 package lorien.ua.shoppinglist.gui.activities;
 
+import android.app.AlertDialog;
+import android.app.Dialog;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -13,7 +17,9 @@ import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.melnykov.fab.FloatingActionButton;
 
@@ -22,15 +28,18 @@ import org.greenrobot.eventbus.Subscribe;
 
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 
+import lorien.ua.shoppinglist.MyApplication;
 import lorien.ua.shoppinglist.R;
-import lorien.ua.shoppinglist.events.item.ItemAddEvent;
 import lorien.ua.shoppinglist.events.item.ItemDeleteEvent;
 import lorien.ua.shoppinglist.events.item.ItemDeselectedEvent;
 import lorien.ua.shoppinglist.events.item.ItemMarkAsDoUndoEvent;
 import lorien.ua.shoppinglist.events.item.ItemSelectedEvent;
 import lorien.ua.shoppinglist.events.item.ItemsRemoveChecked;
 import lorien.ua.shoppinglist.events.list.ListAddEvent;
+import lorien.ua.shoppinglist.events.list.ListDeleteEvent;
+import lorien.ua.shoppinglist.events.list.ListRefreshEvent;
 import lorien.ua.shoppinglist.events.list.ListUpdateEvent;
 import lorien.ua.shoppinglist.gui.fragments.ListItemsFragment;
 import lorien.ua.shoppinglist.gui.fragments.model.list.ListModelFragment;
@@ -44,6 +53,7 @@ public class EditListActivity extends AppCompatActivity implements ActionMode.Ca
     public static final String SELECTED_ITEMS_MAP = "ED_LIST_SELECTED_MAP";
 
     private ListModelFragment mFragment = null;
+    ListItemsFragment listItemsFragment = null;
     private int selectedItemPosition = -1;
     private ShoppingListItem selectedListItem = null;
 
@@ -101,9 +111,13 @@ public class EditListActivity extends AppCompatActivity implements ActionMode.Ca
         }
 
         //Put items_of_list_fragment to the right place
-        ListItemsFragment listItems = new ListItemsFragment();
-        getFragmentManager().beginTransaction()
-                .add(R.id.list_items, listItems, ITEMS_OF_LIST).commit();
+        listItemsFragment = (ListItemsFragment) getFragmentManager()
+                .findFragmentByTag(ITEMS_OF_LIST);
+        if (listItemsFragment == null) {
+            listItemsFragment = new ListItemsFragment();
+            getFragmentManager().beginTransaction()
+                    .replace(R.id.list_items_frag_place, listItemsFragment, ITEMS_OF_LIST).commit();
+        }
 
         title = (EditText) findViewById(R.id.shopping_list_name);
         doneItemsCount = (TextView) findViewById(R.id.shopping_list_items_done);
@@ -119,21 +133,35 @@ public class EditListActivity extends AppCompatActivity implements ActionMode.Ca
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                ShoppingList list = mFragment.getShoppingList();
-                //Get title from UI
-                if (list.getId() == null) {
-                    list.setIsDone(false);
-                }
-                list.setName(title.getText().toString());
-
-                if (list.getId() == null) {
-                    EventBus.getDefault().postSticky(new ListAddEvent(list, mFragment.getPosition()));
-                } else {
-                    EventBus.getDefault().postSticky(new ListUpdateEvent(list, mFragment.getPosition()));
-                }
-                finish();
+                saveListListener();
             }
         });
+
+        getSupportActionBar().setIcon(R.mipmap.ic_launcher);
+    }
+
+    public void saveListListener() {
+        if (title.getText() == null || title.getText().length() < 1) {
+            Toast.makeText(this,
+                    getString(R.string.ed_list_validation), Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        ShoppingList list = mFragment.getShoppingList();
+        list.addAllItemsWithReplace(listItemsFragment.getAdapter().getAllItems());
+
+        if (list.getId() == null) {
+            list.setIsDone(false);
+        }
+
+        list.setName(title.getText().toString());
+        if (list.getId() == null) {
+            EventBus.getDefault().postSticky(new ListAddEvent(list, mFragment.getPosition()));
+        } else {
+            EventBus.getDefault().postSticky(new ListUpdateEvent(list, mFragment.getPosition()));
+        }
+
+        finish();
     }
 
     @Override
@@ -152,29 +180,70 @@ public class EditListActivity extends AppCompatActivity implements ActionMode.Ca
 
         //noinspection SimplifiableIfStatement
         switch (id) {
-            case R.id.action_settings:
+            case R.id.ed_list_settings:
+                startActivity(new Intent(this, Preferences.class));
                 return true;
 
             case R.id.ed_list_del_items:
                 delItemButtonListener();
-                return true;
+                break;
 
             case R.id.ed_list_add_item:
                 addItemButtonListener();
-                return true;
+                break;
 
 
             case R.id.ed_list_del_list:
+                AlertDialog doneDialog = new AlertDialog.Builder(this)
+                        .setTitle(R.string.dialog_delete_list_title)
+                        .setIcon(R.drawable.ic_warning_black)
+                        .setPositiveButton(android.R.string.ok, new Dialog.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                EventBus.getDefault().postSticky(
+                                        new ListDeleteEvent(mFragment.getShoppingList(),
+                                                mFragment.getPosition()));
+                                finish();
+                            }
+                        })
+                        .setNegativeButton(android.R.string.cancel, null).create();
+                doneDialog.show();
+
                 return true;
         }
 
         return super.onOptionsItemSelected(item);
     }
 
+    private void fillListDataWithItemsData() {
+        List<ShoppingListItem> items = listItemsFragment.getAdapter().getAllItems();
+        int doneCount = 0;
+        int leftCount = 0;
+        int total = 0;
+
+        for (ShoppingListItem item : items) {
+            if (item.getIsDone() != null && item.getIsDone()) {
+                doneCount++;
+            } else {
+                leftCount++;
+            }
+
+            total += item.getPrice();
+        }
+
+        doneItemsCount.setText(String.valueOf(doneCount));
+        leftItemsCount.setText(String.valueOf(leftCount));
+        shoppingListTotal.setText(String.valueOf(total));
+    }
+
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         outState.putSerializable(SELECTED_ITEMS_MAP, selectedItemsMap);
         outState.putInt(SELECTED_POS, selectedItemPosition);
+
+        //Save current adapter state to model fragment
+        ShoppingList list = mFragment.getShoppingList();
+        list.addAllItemsWithReplace(listItemsFragment.getAdapter().getAllItems());
         super.onSaveInstanceState(outState);
     }
 
@@ -189,6 +258,12 @@ public class EditListActivity extends AppCompatActivity implements ActionMode.Ca
     protected void onResume() {
         super.onResume();
         EventBus.getDefault().register(this);
+        SharedPreferences prefs = ((MyApplication) getApplication()).getPrefs();
+        if (prefs != null) {
+            //Get list layout to make setKeepScreen on
+            LinearLayout listLayout = (LinearLayout) findViewById(R.id.shopping_list_first_row);
+            listLayout.setKeepScreenOn(prefs.getBoolean(MyApplication.PREF_KEEP_SCREEN_ON, false));
+        }
     }
 
     private void populateGuiFromModelFragment() {
@@ -203,17 +278,6 @@ public class EditListActivity extends AppCompatActivity implements ActionMode.Ca
         shoppingListTotal.setText(String.valueOf(shoppingList.getTotalPrice()));
     }
 
-    @SuppressWarnings("unused")
-    @Subscribe(sticky = true)
-    public void addListItem(ItemAddEvent event) {
-        if (event != null && event.getItem() != null) {
-            if (event.isNewItem()) {
-                mFragment.getShoppingList().addItem(event.getItem());
-            } else {
-                mFragment.getShoppingList().setItem(event.getPosition(), event.getItem());
-            }
-        }
-    }
 
     private void delItemButtonListener() {
         EventBus.getDefault().post(new ItemsRemoveChecked(mFragment.getShoppingList()));
@@ -259,18 +323,14 @@ public class EditListActivity extends AppCompatActivity implements ActionMode.Ca
                     //Deleting item
                     EventBus.getDefault().post(new ItemDeleteEvent(selectedItemPosition, selectedListItem));
                 }
-
-                selectedItemPosition = -1;
-                selectedListItem = null;
-                actionMode.finish();
                 break;
 
             case R.id.items_frgmt_item_edit:
                 Intent i;
                 if (selectedListItem != null) {
                     i = new Intent(this, EditItemActivity.class);
-                    i.putExtra(EditItemActivity.RECEIV_LIST_ITEM, selectedListItem);
-                    i.putExtra(EditItemActivity.RECEIV_ITEM_POSITION, selectedItemPosition);
+                    i.putExtra(EditItemActivity.RECEIVE_LIST_ITEM, selectedListItem);
+                    i.putExtra(EditItemActivity.RECEIVE_ITEM_POSITION, selectedItemPosition);
                     startActivity(i);
                 }
                 break;
@@ -299,6 +359,7 @@ public class EditListActivity extends AppCompatActivity implements ActionMode.Ca
     public void onDestroyActionMode(ActionMode mode) {
         actionMode = null;
     }
+
 
     @SuppressWarnings("unused")
     @Subscribe
@@ -337,8 +398,16 @@ public class EditListActivity extends AppCompatActivity implements ActionMode.Ca
             startActionMode();
             actionMode.setTitle(selectedListItem.getName());
         } else {
+            selectedListItem = null;
+            selectedItemPosition = -1;
             stopActionMode();
         }
+    }
+
+    @SuppressWarnings("unused")
+    @Subscribe(sticky = false)
+    public void listRefreshListener(ListRefreshEvent event) {
+        fillListDataWithItemsData();
     }
 
     private void startActionMode() {

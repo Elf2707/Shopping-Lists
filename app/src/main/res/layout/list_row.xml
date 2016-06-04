@@ -35,7 +35,8 @@
             android:singleLine="false"
             android:text="Done 10 of 10"
             android:textAppearance="?android:attr/textAppearanceLarge"
-            android:textColor="@color/textSub" />
+            android:textColor="@color/textSub"
+            android:typeface="serif" />
 
         <ImageView
             android:layout_width="wrap_content"
@@ -58,7 +59,8 @@
             android:layout_alignParentBottom="false"
             android:textColor="@color/textSub"
             android:layout_alignBottom="@+id/list.row.bought"
-            android:layout_marginRight="10dip" />
+            android:layout_marginRight="10dip"
+            android:typeface="serif" />
 
         <TextView
             android:id="@+id/list.row.title"
@@ -69,7 +71,8 @@
             android:text="Title"
             android:textAppearance="?android:attr/textAppearanceLarge"
             android:layout_marginLeft="10dip"
-            android:textColor="@color/textMain" />
+            android:textColor="@color/textMain"
+            android:typeface="serif" />
 
     </RelativeLayout>
 

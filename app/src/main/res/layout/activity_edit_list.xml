@@ -17,7 +17,8 @@
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
             android:background="?attr/colorPrimary"
-            app:popupTheme="@style/AppTheme.PopupOverlay" />
+            app:popupTheme="@style/AppTheme.PopupOverlay"
+            app:titleMarginStart="25dip"/>
 
     </android.support.design.widget.AppBarLayout>
 
@@ -43,10 +44,11 @@
                 android:text="Title:"
                 android:textAppearance="?android:attr/textAppearanceLarge"
                 android:layout_marginLeft="10dip"
-                android:layout_marginTop="10dip" />
+                android:layout_marginTop="10dip"
+                android:typeface="serif" />
 
             <EditText
-                android:id="@+id/shopping_list.name"
+                android:id="@+id/shopping_list_name"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:hint="Enter list title"
@@ -55,7 +57,8 @@
                 android:layout_toRightOf="@+id/name_label"
                 android:layout_toEndOf="@+id/name_label"
                 android:layout_marginLeft="5dip"
-                android:layout_marginRight="10dip" />
+                android:layout_marginRight="10dip"
+                android:typeface="serif" />
         </LinearLayout>
 
         <LinearLayout
@@ -85,7 +88,8 @@
                     android:layout_height="wrap_content"
                     android:text="Items done:"
                     android:textAppearance="?android:attr/textAppearanceLarge"
-                    android:layout_gravity="bottom" />
+                    android:layout_gravity="bottom"
+                    android:typeface="serif" />
 
                 <TextView
                     android:id="@+id/shopping_list.items_done"
@@ -95,7 +99,8 @@
                     android:textAppearance="?android:attr/textAppearanceLarge"
                     android:layout_marginLeft="5dip"
                     android:layout_gravity="bottom"
-                    android:textSize="21dip" />
+                    android:textSize="21dip"
+                    android:typeface="serif" />
             </LinearLayout>
 
             <LinearLayout
@@ -112,7 +117,8 @@
                     android:layout_height="wrap_content"
                     android:text="left:"
                     android:textAppearance="?android:attr/textAppearanceLarge"
-                    android:layout_gravity="bottom" />
+                    android:layout_gravity="bottom"
+                    android:typeface="serif" />
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -122,7 +128,8 @@
                     android:id="@+id/shopping_list.items_left"
                     android:layout_marginLeft="5dip"
                     android:layout_gravity="bottom"
-                    android:textSize="21dip" />
+                    android:textSize="21dip"
+                    android:typeface="serif" />
 
             </LinearLayout>
 
@@ -147,13 +154,14 @@
                     android:text="0"
                     android:id="@+id/shopping_list.total"
                     android:layout_gravity="bottom"
-                    android:textSize="21dip" />
+                    android:textSize="21dip"
+                    android:typeface="serif" />
             </LinearLayout>
 
         </LinearLayout>
 
         <FrameLayout
-            android:id="@+id/list_items"
+            android:id="@+id/list_items_frag_place"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_below="@+id/shopping_list.second_row"

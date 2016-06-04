@@ -29,7 +29,10 @@
         <activity
             android:name=".gui.activities.EditItemActivity"
             android:label="@string/title_activity_edit_list_item"
-            android:theme="@style/AppTheme.NoActionBar"></activity>
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".gui.activities.Preferences"
+            android:theme="@style/AppTheme.NoActionBar" />
     </application>
 
 </manifest>

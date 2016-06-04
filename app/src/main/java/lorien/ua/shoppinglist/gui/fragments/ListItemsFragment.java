@@ -8,16 +8,14 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.melnykov.fab.FloatingActionButton;
-
 import org.greenrobot.eventbus.EventBus;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import lorien.ua.shoppinglist.MyApplication;
 import lorien.ua.shoppinglist.R;
 import lorien.ua.shoppinglist.adapters.DbListItemMultiChoiceAdapter;
-import lorien.ua.shoppinglist.events.item.ItemAddEvent;
 import lorien.ua.shoppinglist.gui.activities.EditListActivity;
 import lorien.ua.shoppinglist.gui.fragments.model.list.ListModelFragment;
 import lorien.ua.shoppinglist.itemdecorators.RowItemDecorator;
@@ -44,13 +42,12 @@ public class ListItemsFragment extends Fragment {
                 .getFragmentManager()
                 .findFragmentByTag(EditListActivity.MODEL_LIST_FRAGMENT);
 
-        List<ShoppingListItem> itemsList = null;
+        List<ShoppingListItem> itemsList = new ArrayList<>();
         if ((mFragment != null) && (mFragment.getShoppingList().getId() != null)) {
             itemsList = mFragment.getShoppingList().getItems();
         }
 
         this.adapter = new DbListItemMultiChoiceAdapter(shoppingListItemService, itemsList);
-
         if (savedInstanceState != null) {
             adapter.onRestoreInstanceState(savedInstanceState);
         }
@@ -60,7 +57,7 @@ public class ListItemsFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View result = inflater.inflate(R.layout.items_of_list_fragment, container, false);
-        itemsListRecyclerView = (RecyclerView) result.findViewById(R.id.listOfLists);
+        itemsListRecyclerView = (RecyclerView) result.findViewById(R.id.items_of_list_recylview);
         itemsListRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
         itemsListRecyclerView.addItemDecoration(new RowItemDecorator(getActivity(), R.drawable.row_divider));
         itemsListRecyclerView.addItemDecoration(new RowOffsetDevider(2));
@@ -70,17 +67,9 @@ public class ListItemsFragment extends Fragment {
     }
 
     @Override
-    public void onActivityCreated(Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
-        FloatingActionButton fab = (FloatingActionButton) getActivity().findViewById(R.id.ed_list_fab);
-
-        fab.attachToRecyclerView(itemsListRecyclerView);
-    }
-
-    @Override
     public void onSaveInstanceState(Bundle outState) {
-        adapter.onSaveInstanceState(outState);
         super.onSaveInstanceState(outState);
+        adapter.onSaveInstanceState(outState);
     }
 
     @Override
@@ -95,10 +84,11 @@ public class ListItemsFragment extends Fragment {
         EventBus.getDefault().register(adapter);
     }
 
-    @Override
-    public void onStop() {
-        //Remove sticky ItemAddEvent if it was not consume
-        EventBus.getDefault().removeStickyEvent(ItemAddEvent.class);
-        super.onStop();
+    public DbListItemMultiChoiceAdapter getAdapter() {
+        return adapter;
+    }
+
+    public void saveItemsToDb(Long listId) {
+
     }
 }

@@ -27,6 +27,8 @@ import ua.lorien.shoppinglist.model.dao.ShoppingListItem;
  */
 public class ItemHolder extends ChildViewHolder implements CompoundButton.OnCheckedChangeListener,
         View.OnClickListener {
+    private static int MAX_DESCRIPIION_LEN = 14;
+
     private TextView name = null;
     private TextView description = null;
     private String fullDescription = null;
@@ -49,18 +51,20 @@ public class ItemHolder extends ChildViewHolder implements CompoundButton.OnChec
         listItemLayout = (RelativeLayout) row.findViewById(R.id.child_row_layout);
         cart = (ImageView) row.findViewById(R.id.child_row_cart);
 
-        //Making ripple effect starts at position of touch
-        row.setOnTouchListener(new View.OnTouchListener() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            //Making ripple effect starts at position of touch
+            row.setOnTouchListener(new View.OnTouchListener() {
 
-            @TargetApi(Build.VERSION_CODES.LOLLIPOP)
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                v.findViewById(R.id.child_row_main_layout)
-                        .getBackground()
-                        .setHotspot(event.getX(), event.getY());
-                return false;
-            }
-        });
+                @TargetApi(Build.VERSION_CODES.LOLLIPOP)
+                @Override
+                public boolean onTouch(View v, MotionEvent event) {
+                    v.findViewById(R.id.child_row_main_layout)
+                            .getBackground()
+                            .setHotspot(event.getX(), event.getY());
+                    return false;
+                }
+            });
+        }
 
         row.setOnClickListener(this);
 
@@ -69,14 +73,16 @@ public class ItemHolder extends ChildViewHolder implements CompoundButton.OnChec
 
     public void bindModel(ShoppingListItem item) {
         this.item = item;
+
         name.setText(item.getName());
         amount.setText(item.getAmount());
 
         //If description too long cut it to 40 letters and will show it
         //as a hint by click
-        if (item.getDescription().length() > 23) {
+        if (item.getDescription().length() > MAX_DESCRIPIION_LEN) {
             fullDescription = item.getDescription();
-            description.setText(item.getDescription().substring(0, 20) + "...");
+            //3 - "..."
+            description.setText(item.getDescription().substring(0, MAX_DESCRIPIION_LEN - 3) + "...");
             description.setOnClickListener(this);
         } else {
             description.setText(item.getDescription());

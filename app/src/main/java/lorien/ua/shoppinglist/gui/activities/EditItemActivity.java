@@ -15,14 +15,14 @@ import org.greenrobot.eventbus.EventBus;
 
 import lorien.ua.shoppinglist.R;
 import lorien.ua.shoppinglist.events.item.ItemAddEvent;
-import lorien.ua.shoppinglist.events.item.ItemResetDataEvent;
+import lorien.ua.shoppinglist.events.item.ItemUpdateEvent;
 import lorien.ua.shoppinglist.gui.fragments.ItemEditFragment;
 import lorien.ua.shoppinglist.gui.fragments.model.item.ItemModelFragment;
 import ua.lorien.shoppinglist.model.dao.ShoppingListItem;
 
 public class EditItemActivity extends AppCompatActivity {
-    public static final String RECEIV_LIST_ITEM = "ED_ITEM_LIST_ITEM";
-    public static final String RECEIV_ITEM_POSITION = "ED_ITEM_LIST_ITEM_POSITION";
+    public static final String RECEIVE_LIST_ITEM = "ED_ITEM_LIST_ITEM";
+    public static final String RECEIVE_ITEM_POSITION = "ED_ITEM_LIST_ITEM_POSITION";
 
     public static final String LIST_ITEM_MODEL = "LIST_ITEM_MODEL";
     public static final String LIST_ITEM_MAIN_FRAG = "LIST_ITEM_MAIN_FRAG";
@@ -50,14 +50,12 @@ public class EditItemActivity extends AppCompatActivity {
 
             //Getting extras
             ShoppingListItem item = (ShoppingListItem) getIntent()
-                    .getSerializableExtra(RECEIV_LIST_ITEM);
+                    .getSerializableExtra(RECEIVE_LIST_ITEM);
             if (item != null) {
                 mItemFragment.setShoppingListItem(item);
-            } else {
-                mItemFragment.setIsNewItem(true);
             }
 
-            int position = getIntent().getIntExtra(RECEIV_ITEM_POSITION, -1);
+            int position = getIntent().getIntExtra(RECEIVE_ITEM_POSITION, -1);
             mItemFragment.setPosition(position);
 
         }
@@ -69,7 +67,7 @@ public class EditItemActivity extends AppCompatActivity {
         if (itemEditFragment == null) {
             itemEditFragment = new ItemEditFragment();
             getFragmentManager().beginTransaction()
-                    .replace(R.id.list_item_main_frag, itemEditFragment, LIST_ITEM_MAIN_FRAG)
+                    .replace(R.id.item_frag_place, itemEditFragment, LIST_ITEM_MAIN_FRAG)
                     .commit();
         }
 
@@ -85,10 +83,8 @@ public class EditItemActivity extends AppCompatActivity {
                 }
             });
         }
-    }
 
-    private void resetItemButtonListener(View view) {
-        EventBus.getDefault().post(new ItemResetDataEvent());
+        getSupportActionBar().setIcon(R.mipmap.ic_launcher);
     }
 
     private void addItemButtonListener(View view) {
@@ -99,13 +95,20 @@ public class EditItemActivity extends AppCompatActivity {
         if (editFragment != null) {
             //Get list item to the list
             ShoppingListItem item = editFragment.getFilledShoppingListItem();
+            if( item == null ){
+                Toast.makeText(this, R.string.ed_item_validation, Toast.LENGTH_SHORT).show();
+                return;
+            }
 
-            //Fired add event
-            EventBus.getDefault().postSticky(
-                    new ItemAddEvent(item, mItemFragment.getPosition(), mItemFragment.isNewItem()));
-
-        } else {
-            Toast.makeText(this, getString(R.string.something_goes_wrong), Toast.LENGTH_LONG).show();
+            if (mItemFragment.isNewItem()) {
+                //Fired add event
+                EventBus.getDefault().postSticky(
+                        new ItemAddEvent(item, mItemFragment.getPosition()));
+            } else {
+                //Fired update event
+                EventBus.getDefault().postSticky(
+                        new ItemUpdateEvent(item, mItemFragment.getPosition()));
+            }
         }
 
         finish();
